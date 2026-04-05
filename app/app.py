@@ -13,7 +13,7 @@ from app.rekomendasi import get_rekomendasi_async
 load_dotenv(".env")
 
 MODEL_DIR = os.getenv("MODEL_DIR", "app/models")
-MODEL_PATH = os.path.join(MODEL_DIR, "best_lstm_model_tuning.h5")
+MODEL_PATH = os.path.join(MODEL_DIR, "mentalku_best_model.keras")
 TOKENIZER_PATH = os.path.join(MODEL_DIR, "tokenizer_lstm.pkl")
 LABEL_ENCODER_PATH = os.path.join(MODEL_DIR, "label_encoder.pkl")
 
