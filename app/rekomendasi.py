@@ -12,21 +12,23 @@ if not GOOGLE_API_KEY:
 # Inisialisasi Client di luar fungsi biar gak di-load berulang kali
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
-async def get_rekomendasi_async(scores: dict, label_ml: str) -> str:
+
+async def get_rekomendasi_async(scores: dict, dass_dominant: str, ml_label: str, vent_text: str) -> str:
     """
-    Fungsi ASYNC untuk meminta rekomendasi ke Gemini 3 Flash.
-    Tidak akan nge-block server saat menunggu respons.
+    Fungsi ASYNC dengan Dual-Modality Prompting (DASS-21 + LSTM).
     """
     prompt = (
-        f"Kamu adalah seorang profesional kesehatan mental (psikolog/psikiater). "
-        f"Berdasarkan skrining DASS-21, pasien memiliki skor:\n"
-        f"- Depresi: {scores['depression']}\n"
-        f"- Kecemasan: {scores['anxiety']}\n"
-        f"- Stres: {scores['stress']}\n"
-        f"Dari cerita pasien, model AI mendeteksi kecenderungan dominan: {label_ml}.\n\n"
-        f"Berikan rekomendasi psikologis dalam 4 poin utama. "
-        f"Gunakan bahasa profesional yang padat, empati, sederhana, dan mudah dimengerti. "
-        f"Fokus HANYA pada poin rekomendasi, JANGAN berikan kalimat pendahuluan atau penutup apapun."
+        f"Kamu adalah psikolog klinis yang empatik, profesional, dan realistis. "
+        f"ATURAN MUTLAK: Hindari 'toxic positivity' (jangan gunakan kata seperti 'semua akan baik-baik saja', 'jangan bersedih', 'kamu pasti kuat'). "
+        f"Gunakan pendekatan validasi emosi dan berikan solusi praktis.\n\n"
+        f"Sistem kami menggunakan Skrining Validasi Silang (Dual-Modality) dengan hasil berikut:\n"
+        f"1. Tes Kognitif Objektif (DASS-21): Dominan pada {dass_dominant} (Skor: Depresi {scores['depression']}, Kecemasan {scores['anxiety']}, Stres {scores['stress']}).\n"
+        f"2. Analisis Emosi Teks (Machine Learning LSTM): Mendeteksi indikasi kuat adanya {ml_label}.\n"
+        f"3. Curhatan Pasien: \"{vent_text}\"\n\n"
+        f"TUGAS:\n"
+        f"Berikan 4 poin rekomendasi singkat, menenangkan, dan actionable (bisa langsung diterapkan saat ini juga). "
+        f"Sintesiskan rekomendasi berdasarkan temuan tes objektif ({dass_dominant}) DAN indikasi emosi dari teks ({ml_label}). "
+        f"Fokus HANYA pada 4 poin rekomendasi tersebut tanpa pendahuluan atau penutup. Jangan ulangi menyebutkan skor mereka di jawabanmu."
     )
 
     try:
