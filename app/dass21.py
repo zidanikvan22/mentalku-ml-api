@@ -14,9 +14,9 @@ def process_dass21(answers: list[int]):
 
     # Logic Penentuan Kategori
     dass21_scale = {
-        "Depresi": [(0, 9, "Normal"), (10, 13, "Ringan"), (14, 20, "Sedang"), (21, 27, "Berat"), (28, 100, "Sangat berat")],
-        "Kecemasan": [(0, 7, "Normal"), (8, 9, "Ringan"), (10, 14, "Sedang"), (15, 19, "Berat"), (20, 100, "Sangat berat")],
-        "Stres": [(0, 14, "Normal"), (15, 18, "Ringan"), (19, 25, "Sedang"), (26, 33, "Berat"), (34, 100, "Sangat berat")]
+        "Depresi": [(0, 9, "Normal"), (10, 13, "Ringan"), (14, 20, "Sedang"), (21, 27, "Parah"), (28, 100, "Sangat Parah")],
+        "Kecemasan": [(0, 7, "Normal"), (8, 9, "Ringan"), (10, 14, "Sedang"), (15, 19, "Parah"), (20, 100, "Sangat Parah")],
+        "Stres": [(0, 14, "Normal"), (15, 18, "Ringan"), (19, 25, "Sedang"), (26, 33, "Parah"), (34, 100, "Sangat Parah")]
     }
 
     def get_level(score, category):
@@ -34,9 +34,9 @@ def process_dass21(answers: list[int]):
     elif rata_rata < 20:
         final_level = "Sedang"
     elif rata_rata < 27:
-        final_level = "Berat"
+        final_level = "Parah"
     else:
-        final_level = "Sangat Berat"
+        final_level = "Sangat Parah"
 
     return {
         "scores": {

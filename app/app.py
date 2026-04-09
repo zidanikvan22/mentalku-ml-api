@@ -79,7 +79,7 @@ async def evaluate_mental_health(payload: EvaluationRequest):
         raise HTTPException(status_code=500, detail=f"Gagal memproses AI Prediksi: {e}")
 
     # 3. IDENTIFIKASI DOMINASI DASS-21 (Tanpa mengorbankan LSTM)
-    severity_map = {"Normal": 0, "Ringan": 1, "Sedang": 2, "Berat": 3, "Sangat berat": 4}
+    severity_map = {"Normal": 0, "Ringan": 1, "Sedang": 2, "Parah": 3, "Sangat Parah": 4}
     dass_levels = dass_result["levels"]
     scores_index = {
             "Depresi": severity_map.get(dass_levels["depression"], 0),
