@@ -1,18 +1,18 @@
 def process_dass21(answers: list[int]):
     """
-    Menerima array 21 jawaban (0-3).
-    Mengembalikan dictionary berisi skor dan level untuk masing-masing dimensi.
+    Processes a list of 21 DASS-21 answers (0-3 scale).
+    Returns a dictionary containing scores, levels for each dimension, average score, and final level.
     """
     if len(answers) != 21:
         raise ValueError("Jumlah jawaban DASS-21 harus tepat 21.")
 
-    # Slicing Array & Hitung Skor (DASS-21 harus dikali 2 untuk menyesuaikan dengan DASS-42)
-    # Urutan UI kita: 1-7 (Stress), 8-14 (Kecemasan), 15-21 (Depresi)
+    # Slice array & calculate scores (DASS-21 scores are multiplied by 2 to match DASS-42 scale)
+    # UI input order: 1-7 (Stress), 8-14 (Anxiety), 15-21 (Depression)
     stress_score = sum(answers[0:7]) * 2
     anxiety_score = sum(answers[7:14]) * 2
     depresi_score = sum(answers[14:21]) * 2
 
-    # Logic Penentuan Kategori
+    # Category determination logic based on DASS-42 scale
     dass21_scale = {
         "Depresi": [(0, 9, "Normal"), (10, 13, "Ringan"), (14, 20, "Sedang"), (21, 27, "Parah"), (28, 100, "Sangat Parah")],
         "Kecemasan": [(0, 7, "Normal"), (8, 9, "Ringan"), (10, 14, "Sedang"), (15, 19, "Parah"), (20, 100, "Sangat Parah")],
@@ -25,7 +25,7 @@ def process_dass21(answers: list[int]):
                 return label
         return "Tidak Diketahui"
 
-    # Hitung Rata-rata & Status Final
+    # Calculate average and final overall status
     rata_rata = (depresi_score + anxiety_score + stress_score) / 3
     if rata_rata < 10:
         final_level = "Normal"

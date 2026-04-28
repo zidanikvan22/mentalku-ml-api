@@ -9,13 +9,14 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY tidak ditemukan di environment.")
 
-# Inisialisasi Client di luar fungsi biar gak di-load berulang kali
+# Initialize Client globally to prevent redundant instantiation
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
 
 async def get_rekomendasi_async(scores: dict, dass_dominant: str, ml_label: str, vent_text: str) -> str:
     """
-    Fungsi ASYNC dengan Dual-Modality Prompting (DASS-21 + LSTM).
+    Asynchronous function using Dual-Modality Prompting (DASS-21 scores + LSTM Emotion Analysis).
+    Generates personalized recommendations using Gemini.
     """
     prompt = (
         f"Kamu adalah psikolog klinis yang empatik, profesional, dan realistis. "
@@ -32,7 +33,7 @@ async def get_rekomendasi_async(scores: dict, dass_dominant: str, ml_label: str,
     )
 
     try:
-        # MAGIC HAPPENS HERE: Update target model ke gemini-3-flash
+        # Generate content using gemini-3-flash-preview model
         response = await client.aio.models.generate_content(
             model="gemini-3-flash-preview",
             contents=prompt

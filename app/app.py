@@ -23,7 +23,7 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Global Variables buat nampung model ML di memori
+# Global Variables to hold ML models in memory
 model = None
 tokenizer = None
 label_encoder = None
@@ -31,8 +31,8 @@ label_encoder = None
 @app.on_event("startup")
 async def load_ml_components():
     """
-    Fungsi ini otomatis jalan sekali pas server nyala.
-    Nge-load model berat ke RAM biar pas user request, API langsung gas gak perlu load ulang.
+    Runs automatically once during server startup.
+    Loads heavy models into RAM so the API can respond quickly without reloading.
     """
     global model, tokenizer, label_encoder
     try:
@@ -45,7 +45,7 @@ async def load_ml_components():
     except Exception as e:
         print(f"❌ FATAL ERROR saat memuat model: {e}")
 
-# --- PYDANTIC SCHEMA (JSON Contract dari Laravel) ---
+# --- PYDANTIC SCHEMA (JSON Contract for Laravel Integration) ---
 class EvaluationRequest(BaseModel):
     answers: list[int] = Field(..., min_length=21, max_length=21, description="Array 21 jawaban DASS-21 (0-3)")
     vent_text: str = Field(..., description="Teks curhatan user")
@@ -61,24 +61,24 @@ async def evaluate_mental_health(payload: EvaluationRequest):
     if model is None or tokenizer is None or label_encoder is None:
         raise HTTPException(status_code=500, detail="Model ML belum siap.")
 
-    # 1. Hitung DASS-21
+    # 1. Calculate DASS-21 scores
     try:
         dass_result = process_dass21(payload.answers)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # 2. Prediksi ML & TRANSLASI BAHASA (Anti-Retrain System)
+    # 2. ML Prediction & Translation (Anti-Retrain System)
     try:
         emotion_label_eng = predict_emotion(
             text=payload.vent_text, model=model, tokenizer=tokenizer, label_encoder=label_encoder
         )
-        # Translator Cepat
+        # Quick Translator
         translator = {"depression": "Depresi", "anxiety": "Kecemasan", "stress": "Stres", "normal": "Normal"}
         ml_label_indo = translator.get(emotion_label_eng.lower(), "Normal")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal memproses AI Prediksi: {e}")
 
-    # 3. IDENTIFIKASI DOMINASI DASS-21 (Tanpa mengorbankan LSTM)
+    # 3. Identify dominant DASS-21 category
     severity_map = {"Normal": 0, "Ringan": 1, "Sedang": 2, "Parah": 3, "Sangat Parah": 4}
     dass_levels = dass_result["levels"]
     scores_index = {
@@ -91,23 +91,23 @@ async def evaluate_mental_health(payload: EvaluationRequest):
     if max_index == 0:
             dass_dominant = "Normal"
     else:
-        # Ambil semua yang tertinggi (misal bisa aja Depresi & Stres sama-sama parah)
+        # Get all categories with the highest severity score (e.g., Depression & Stress can be equally severe)
         highest_cats = [k for k, v in scores_index.items() if v == max_index]
-        dass_dominant = " dan ".join(highest_cats)  # Output: "Stres" atau "Depresi dan Kecemasan"
+        dass_dominant = " dan ".join(highest_cats) 
 
-    # 4. Minta Rekomendasi Gemini (Kirim DASS dan LSTM sebagai 2 entitas sejajar)
+    # 4. Request Gemini Recommendation (Send DASS and LSTM results as parallel contexts)
     try:
         recommendation = await get_rekomendasi_async(
             scores=dass_result["scores"],
-            dass_dominant=dass_dominant,  # Kirim temuan utama tes objektif
-            ml_label=ml_label_indo,  # Kirim temuan utama teks subjektif (LSTM)
+            dass_dominant=dass_dominant,  # Send main objective test findings
+            ml_label=ml_label_indo,  # Send main subjective text findings (LSTM)
             vent_text=payload.vent_text
         )
     except Exception as e:
         print(f"⚠️ Warning: Gemini gagal ngasih respon -> {e}")
         recommendation = "Terjadi gangguan saat menarik rekomendasi AI. Mohon tetap jaga kesehatan mental Anda dan konsultasi ke profesional."
 
-    # 5. Susun Format JSON Akhir (Tambahin final_label)
+    # 5. Construct Final JSON Response
     return {
         "status": "success",
         "scores": dass_result["scores"],

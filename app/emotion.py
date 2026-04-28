@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences  # type: ignor
 def clean_text_v1(text: str) -> str:
     """
     Zero-Destruction Preprocessing Protocol.
-    IDENTIK 100% dengan fungsi clean_text di Google Colab.
+    100% identical to the clean_text function used during model training in Google Colab.
     """
     text = str(text).lower()
     text = re.sub(r'http\S+|www\S+', '', text)  # Remove URL
@@ -20,20 +20,20 @@ def clean_text_v1(text: str) -> str:
 
 def predict_emotion(text: str, model, tokenizer, label_encoder, max_sequence_length: int = 97) -> str:
     """
-    Inference Keras 3 Model.
-    MAX_LEN = 97, padding='post', truncating='post'.
+    Keras 3 Model Inference.
+    Configured with MAX_LEN = 97, padding='post', and truncating='post'.
     """
-    # Fallback kalau input kosong
+    # Fallback for empty input
     if not text or not text.strip():
         return "normal"
 
-    # 1. Cleaning Teks sesuai Pipeline Training
+    # 1. Text cleaning using training pipeline protocol
     cleaned_text = clean_text_v1(text)
 
-    # 2. Tokenization ke Sequence
+    # 2. Tokenize text into sequence
     sequence = tokenizer.texts_to_sequences([cleaned_text])
 
-    # 3. Padding (Wajib 'post' sesuai blueprint arsitektur)
+    # 3. Padding (Must use 'post' as per architectural blueprint)
     padded = pad_sequences(
         sequence,
         maxlen=max_sequence_length,
@@ -41,11 +41,11 @@ def predict_emotion(text: str, model, tokenizer, label_encoder, max_sequence_len
         truncating='post'
     )
 
-    # 4. Prediksi Keras 3
+    # 4. Keras 3 Prediction
     probabilities = model.predict(padded, verbose=0)[0]
     predicted_index = np.argmax(probabilities)
 
-    # 5. Decode Index ke Label (contoh: 'depression', 'stress')
+    # 5. Decode predicted index to string label (e.g., 'depression', 'stress')
     predicted_label = label_encoder.inverse_transform([predicted_index])[0]
 
     return predicted_label
